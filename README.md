@@ -29,7 +29,7 @@
         keytool -list -rfc --keystore jwt.jks | openssl x509 -inform pem -pubkey
         
         
-    # 4) For Running 
+   # 4) For Running 
     
             1)  change the database details in applicaiton.yml.
             

@@ -16,6 +16,7 @@ import org.springframework.security.oauth2.provider.OAuth2Request;
 import org.springframework.security.oauth2.provider.TokenRequest;
 import org.springframework.security.oauth2.provider.token.AbstractTokenGranter;
 import org.springframework.security.oauth2.provider.token.TokenStore;
+import org.springframework.security.web.authentication.preauth.PreAuthenticatedAuthenticationToken;
 import qa.gov.customs.oauth2.appoauth.service.MfaService;
 
 import java.util.LinkedHashMap;
@@ -104,7 +105,8 @@ public class MfaTokenGranter extends AbstractTokenGranter {
             System.out.println("Trow 91 ==> " + "getAuthentication" + authentication.getUserAuthentication());
 
             authentication.getUserAuthentication();
-            Authentication user = authenticationManager.authenticate(authentication.getUserAuthentication()  );
+            //Authentication user = authenticationManager.authenticate(authentication.getUserAuthentication()  );
+            Authentication user = authenticationManager.authenticate(new PreAuthenticatedAuthenticationToken(authentication.getUserAuthentication(), "", authentication.getAuthorities()));
             System.out.println("Trow 9112 ==> " + user);
             Object details = authentication.getDetails();
             authentication = new OAuth2Authentication(authentication.getOAuth2Request(), user);

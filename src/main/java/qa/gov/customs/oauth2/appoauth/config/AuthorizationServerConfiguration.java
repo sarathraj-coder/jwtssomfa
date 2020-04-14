@@ -15,6 +15,8 @@ import org.springframework.security.oauth2.config.annotation.web.configurers.Aut
 import org.springframework.security.oauth2.config.annotation.web.configurers.AuthorizationServerSecurityConfigurer;
 import org.springframework.security.oauth2.provider.CompositeTokenGranter;
 import org.springframework.security.oauth2.provider.TokenGranter;
+import org.springframework.security.oauth2.provider.token.TokenEnhancer;
+import org.springframework.security.oauth2.provider.token.TokenEnhancerChain;
 import org.springframework.security.oauth2.provider.token.TokenStore;
 import org.springframework.security.oauth2.provider.token.store.JdbcTokenStore;
 import org.springframework.security.oauth2.provider.token.store.JwtAccessTokenConverter;
@@ -42,22 +44,27 @@ public class AuthorizationServerConfiguration implements AuthorizationServerConf
 
     @Bean
     TokenStore jwtTokenStore(){
-        return new JwtTokenStore(jwtAccessTokenConverter());
+        return new JwtTokenStore(accessTokenConverter());
     }
 
     @Bean
-    public JwtAccessTokenConverter jwtAccessTokenConverter() {
-        JwtAccessTokenConverter converter = new CustomTokenEnhancer();
+    public JwtAccessTokenConverter accessTokenConverter() {
+//        JwtAccessTokenConverter converter = new CustomTokenEnhancer();
+//        converter.setKeyPair(new KeyStoreKeyFactory(new ClassPathResource("jwt1.jks"), "password".toCharArray()).getKeyPair("jwt"));
+//        return converter;
+
+        JwtAccessTokenConverter converter = new JwtAccessTokenConverter();
+        converter.setAccessTokenConverter(new CustomAccessTokenConverter());
         converter.setKeyPair(new KeyStoreKeyFactory(new ClassPathResource("jwt1.jks"), "password".toCharArray()).getKeyPair("jwt"));
         return converter;
     }
 
 
-    @Bean
-    TokenStore jdbcTokenStore(){
-        //return new JwtTokenStore(jwtAccessTokenConverter());
-       return new JdbcTokenStore(dataSource);
-    }
+//    @Bean
+//    TokenStore jdbcTokenStore(){
+//        //return new JwtTokenStore(jwtAccessTokenConverter());
+//       return new JdbcTokenStore(dataSource);
+//    }
 
 
     @Autowired
@@ -93,11 +100,17 @@ public class AuthorizationServerConfiguration implements AuthorizationServerConf
 
 
     private TokenGranter tokenGranter(final AuthorizationServerEndpointsConfigurer endpoints) {
+
+        ArrayList<TokenEnhancer> enhancers =  new ArrayList<>();
+        enhancers.add(new CustomTokenEnhancer());
+        enhancers.add(accessTokenConverter());
+
+        TokenEnhancerChain tokenEnhancerChain = new TokenEnhancerChain();
+        tokenEnhancerChain.setTokenEnhancers(enhancers);
         System.out.println("Here the issue 3");
         endpoints.tokenStore(jwtTokenStore());
-        //endpoints .reuseRefreshTokens(false);
-        endpoints.accessTokenConverter(jwtAccessTokenConverter());
-        //endpoints.tokenEnhancer(jwtAccessTokenConverter());
+        endpoints.accessTokenConverter(accessTokenConverter());
+        endpoints.tokenEnhancer(tokenEnhancerChain);
         //endpoints.tokenServices(endpoints.getTokenServices());
 
 

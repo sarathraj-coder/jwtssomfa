@@ -3,6 +3,8 @@ package qa.gov.customs.oauth2.appoauth.config;
 import org.springframework.security.oauth2.common.DefaultOAuth2AccessToken;
 import org.springframework.security.oauth2.common.OAuth2AccessToken;
 import org.springframework.security.oauth2.provider.OAuth2Authentication;
+import org.springframework.security.oauth2.provider.token.DefaultAccessTokenConverter;
+import org.springframework.security.oauth2.provider.token.TokenEnhancer;
 import org.springframework.security.oauth2.provider.token.store.JwtAccessTokenConverter;
 import qa.gov.customs.oauth2.appoauth.model.User;
 
@@ -11,7 +13,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
-public class CustomTokenEnhancer extends JwtAccessTokenConverter {
+public class CustomTokenEnhancer implements TokenEnhancer {
 
     @Override
     public OAuth2AccessToken enhance(OAuth2AccessToken accessToken, OAuth2Authentication authentication) {
@@ -49,6 +51,21 @@ public class CustomTokenEnhancer extends JwtAccessTokenConverter {
         // info.put("permissions",userMaster.getRoles().get(0).getPermissions().toArray());
         DefaultOAuth2AccessToken customAccessToken = new DefaultOAuth2AccessToken(accessToken);
         customAccessToken.setAdditionalInformation(info);
-        return super.enhance(customAccessToken, authentication);
+        //return super.enhance(customAccessToken, authentication);
+        return customAccessToken;
     }
 }
+
+
+
+
+//public class CustomTokenEnhancer implements TokenEnhancer {
+//
+//    @Override
+//    public OAuth2AccessToken enhance(OAuth2AccessToken accessToken, OAuth2Authentication authentication) {
+//        Map<String, Object> additionalInfo = new HashMap<>();
+//        additionalInfo.put("user_id", new Random().nextInt());
+//        ((DefaultOAuth2AccessToken) accessToken).setAdditionalInformation(additionalInfo);
+//        return accessToken;
+//    }
+//}

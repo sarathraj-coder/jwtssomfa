@@ -36,6 +36,7 @@ public class MfaTokenGranter extends AbstractTokenGranter {
         this.clientDetailsService = endpointsConfigurer.getClientDetailsService();
         this.authenticationManager = authenticationManager;
         this.mfaService = mfaService;
+
     }
 
     @Override
@@ -103,7 +104,7 @@ public class MfaTokenGranter extends AbstractTokenGranter {
             System.out.println("Trow 91 ==> " + "getAuthentication" + authentication.getUserAuthentication());
 
             authentication.getUserAuthentication();
-            Authentication user = authenticationManager.authenticate(authentication.getUserAuthentication());
+            Authentication user = authenticationManager.authenticate(authentication.getUserAuthentication()  );
             System.out.println("Trow 9112 ==> " + user);
             Object details = authentication.getDetails();
             authentication = new OAuth2Authentication(authentication.getOAuth2Request(), user);

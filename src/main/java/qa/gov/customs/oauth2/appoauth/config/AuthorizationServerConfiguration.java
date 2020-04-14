@@ -37,10 +37,23 @@ public class AuthorizationServerConfiguration implements AuthorizationServerConf
     @Autowired
     UserDetailsService userDetailsService;
 
-    @Bean
-    public PasswordEncoder passwordEncoder() throws Exception {
-        return  PasswordEncoderFactories.createDelegatingPasswordEncoder();
+
+    @Autowired
+    DataSource dataSource;
+
+
+    private PasswordEncoder passwordEncoder;
+    private AuthenticationManager authenticationManager;
+    private MfaService mfaService;
+
+    @Autowired
+    public AuthorizationServerConfiguration(PasswordEncoder passwordEncoder, AuthenticationManager authenticationManager,
+                                            MfaService mfaService) {
+        this.passwordEncoder = passwordEncoder;
+        this.authenticationManager = authenticationManager;
+        this.mfaService = mfaService;
     }
+
 
     @Bean
     TokenStore jwtTokenStore(){
@@ -49,36 +62,12 @@ public class AuthorizationServerConfiguration implements AuthorizationServerConf
 
     @Bean
     public JwtAccessTokenConverter accessTokenConverter() {
-//        JwtAccessTokenConverter converter = new CustomTokenEnhancer();
-//        converter.setKeyPair(new KeyStoreKeyFactory(new ClassPathResource("jwt1.jks"), "password".toCharArray()).getKeyPair("jwt"));
-//        return converter;
-
         JwtAccessTokenConverter converter = new JwtAccessTokenConverter();
         converter.setAccessTokenConverter(new CustomAccessTokenConverter());
         converter.setKeyPair(new KeyStoreKeyFactory(new ClassPathResource("jwt1.jks"), "password".toCharArray()).getKeyPair("jwt"));
         return converter;
     }
 
-
-//    @Bean
-//    TokenStore jdbcTokenStore(){
-//        //return new JwtTokenStore(jwtAccessTokenConverter());
-//       return new JdbcTokenStore(dataSource);
-//    }
-
-
-    @Autowired
-    DataSource dataSource;
-
-    @Autowired
-    AuthenticationManager authenticationManagerBean;
-
-
-
-
-
-    @Autowired
-    private MfaService mfaService;
 
     @Override
     public void configure(AuthorizationServerSecurityConfigurer security) throws Exception {
@@ -87,7 +76,7 @@ public class AuthorizationServerConfiguration implements AuthorizationServerConf
 
     @Override
     public void configure(ClientDetailsServiceConfigurer clients) throws Exception {
-            clients.jdbc(dataSource).passwordEncoder(passwordEncoder());
+            clients.jdbc(dataSource).passwordEncoder(passwordEncoder);
     }
 
     @Override
@@ -104,23 +93,24 @@ public class AuthorizationServerConfiguration implements AuthorizationServerConf
         ArrayList<TokenEnhancer> enhancers =  new ArrayList<>();
         enhancers.add(new CustomTokenEnhancer());
         enhancers.add(accessTokenConverter());
-
         TokenEnhancerChain tokenEnhancerChain = new TokenEnhancerChain();
         tokenEnhancerChain.setTokenEnhancers(enhancers);
-        System.out.println("Here the issue 3");
+
+
         endpoints.tokenStore(jwtTokenStore());
         endpoints.accessTokenConverter(accessTokenConverter());
         endpoints.tokenEnhancer(tokenEnhancerChain);
-        //endpoints.tokenServices(endpoints.getTokenServices());
+
+        //endpoints.authenticationManager(authenticationManager);
 
 
 
         //endpoints .authenticationManager(authenticationManager);
-        endpoints.userDetailsService(userDetailsService);
+       // endpoints.userDetailsService(userDetailsService);
         List<TokenGranter> granters = new ArrayList<>();
         granters.add(endpoints.getTokenGranter());
-        granters.add(new PasswordTokenGranter(endpoints, authenticationManagerBean, mfaService));
-        granters.add(new MfaTokenGranter(endpoints, authenticationManagerBean, mfaService));
+        granters.add(new PasswordTokenGranter(endpoints, authenticationManager, mfaService));
+        granters.add(new MfaTokenGranter(endpoints, authenticationManager, mfaService));
         //granters.add(new MfaTokenGranter(endpoints, authenticationManagerBean, mfaService));
         return new CompositeTokenGranter(granters);
     }

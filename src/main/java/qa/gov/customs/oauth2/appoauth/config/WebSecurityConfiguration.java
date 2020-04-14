@@ -18,13 +18,9 @@ import org.springframework.security.oauth2.config.annotation.web.configurers.Aut
 @Configuration
 public class WebSecurityConfiguration extends WebSecurityConfigurerAdapter  {
 
-    @Autowired
-    PasswordEncoder passwordEncoder;
-
 
     @Autowired
     UserDetailsService userDetailsService;
-
 
 
 
@@ -36,16 +32,15 @@ public class WebSecurityConfiguration extends WebSecurityConfigurerAdapter  {
 
 
     @Bean
-    protected AuthenticationManager getAuthenticationManager() throws Exception {
-        System.out.println("Here the issue 1");
-        return super.authenticationManagerBean();
+    public PasswordEncoder passwordEncoder() {
+        return PasswordEncoderFactories.createDelegatingPasswordEncoder();
     }
 
 
     @Override
     protected void configure(AuthenticationManagerBuilder auth) throws Exception {
         System.out.println("Here the issue");
-        auth.userDetailsService(userDetailsService).passwordEncoder(passwordEncoder);
+        auth.userDetailsService(userDetailsService).passwordEncoder(passwordEncoder());
         //auth.authenticationProvider(new JwtProviderImpl());
     }
 

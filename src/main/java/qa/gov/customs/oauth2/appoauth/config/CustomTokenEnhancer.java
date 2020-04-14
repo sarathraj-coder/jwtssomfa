@@ -41,7 +41,7 @@ public class CustomTokenEnhancer implements TokenEnhancer {
         }catch (Exception e){
             e.printStackTrace();
             //User userMaster = (User) authentication.getPrincipal();
-            info.put("username", authentication.getPrincipal());
+           // info.put("email", authentication.getPrincipal());
         }
         // info.put("sarath",121212);
 
